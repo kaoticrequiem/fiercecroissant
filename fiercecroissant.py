@@ -76,7 +76,7 @@ def scrapebin():
 
             if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text":
                 filename = save_path + paste['key']
-                if binarymatch:
+                if binarymatch and paste_data.isnumeric():
                     filename = save_path_binary + paste['key']
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
