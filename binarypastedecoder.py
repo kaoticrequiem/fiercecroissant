@@ -18,11 +18,11 @@ for filename in os.listdir("/home/ubuntu/patrick/pastes/binarypastes"):
        continue
    #decode it
    os.rename("/home/ubuntu/patrick/pastes/binarypastes/" + filename, "/home/ubuntu/patrick/pastes/binarypastes/" + filename + " PROCESSED")
-   try:
-      decoded_paste = binascii.b2a_base64(paste_data)
-      writefile(outputfile, decoded_paste)
-   except:
-      print("I failed trying to decode paste ") + filename
-      raise
-      continue
-#throw that into TG
+   if paste_data.isnumeric():
+      try:
+         decoded_paste = binascii.b2a_base64(paste_data)
+         writefile(outputfile, decoded_paste)
+      except:
+         print("I failed trying to decode paste ") + filename
+         raise
+         continue
