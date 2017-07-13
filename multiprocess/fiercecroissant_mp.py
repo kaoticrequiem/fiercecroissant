@@ -72,7 +72,7 @@ def trendscraper():
 def scrapebin():
 
     result_limit = 50
-    sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
+    sleep_time = 15  # interval in seconds to sleep after each recent pastes batch
     minimum_length = 10  # ignore pastes shorter than this
 
 
@@ -144,31 +144,7 @@ def scrapebin():
                     filename = save_path_img + paste['key']
                 save_paste(filename, paste_data)
                 hits += 1
-                #print(filename)
-                #print(paste_size)
 
-                headers = {'Content-Type': 'application/json'}
-                card = {
-                    "style": "link",
-                    "url": "https://pastebin.com/" + paste['key'],
-                    "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
-                    "title": "Pastebin Hit",
-                    "description": {
-                        "format": "html",
-                        "value": "<b>TEST: New Paste Seen:</b> <a href='https://pastebin.com/'" + paste['key'] + " data-target='hip-connect-tester:hctester.dialog.simple' data-target-options='{\"options\":{\"title\":\"Custom Title\"}, \"parameters\":{\"from\":\"link\"}}'>https://pastebin.com/" + paste['key'] + "</a>"
-                    },
-                    "icon": {
-                        "url": "https://pastebin.com/favicon.ico"
-                    },
-                    "date": 1443057955792
-                }
-
-                data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
-
-                params = {'auth_token': hip_token}
-
-                r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
-                print (r)
 
         print("\nHits: {0}".format(hits))
         print("Waiting...\n\n")
@@ -178,11 +154,6 @@ def scrapebin():
 def decodebase64():
 
     decoded_save_path = '/home/ubuntu/patrick/decodedexes/' # absolute path to save pe32exe
-
-    def writefile(path, binary):
-       writefile = open(path,'wb')
-       writefile.write(binary)
-       writefile.close()
 
     for filename in os.listdir('/home/ubuntu/patrick/pastes/base64pastes/'): # absolute path of saved base64 sorted pastes
         sorted_path = os.path.join('/home/ubuntu/patrick/pastes/base64pastes', filename)
@@ -201,8 +172,32 @@ def decodebase64():
         writefile(outputfile, decoded_paste) # write pe32exe
         os.remove(sorted_path)
 
+def decodebinary():
+    
+    for filename in os.listdir('/home/ubuntu/patrick/pastes/binarypastes/'):
+        sorted_path = os.path.join('/home/ubuntu/patrick/pastes/binarypastes/', filename)
+        raw_text_url = 'http://pastebin.com/raw/'
+        length = 8
+        outputfile = save_path + filename
+        paste_data = requests.get(raw_text_url + filename).text
+        response = requests.get(raw_text_url + filename)
+        if response.status_code == 404:
+            continue
+        paste_data_length = [paste_data[i:i+length] for i in range(0,len(paste_data),length)]
+        decoded_paste = ''.join([chr(int(c,base=2)) for c in paste_data_length])
+        writefile(outputfile, decoded_paste)
+        os.remove(sorted_path)
+
+
+def writefile(path, binary):
+    writefile = open(path,'wb')
+    writefile.write(binary)
+    writefile.close()
+
 if __name__ == "__main__":
     p1 = Process(target=scrapebin)
     p1.start()
     p2 = Process(target=decodebase64)
     p2.start()
+    p3 = Process(target=decodebinary)
+    p3.start()
