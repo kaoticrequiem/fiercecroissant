@@ -5,7 +5,6 @@
 #!/usr/bin/python3
 
 import requests, json, time, sys, os, re, configparser, base64
-from bs4 import BeautifulSoup
 from multiprocessing import Process
 
 paste_data = ""
