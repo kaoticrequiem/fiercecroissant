@@ -144,7 +144,7 @@ def scrapebin():
                     filename = save_path_img + paste['key']
                 save_paste(filename, paste_data)
                 hits += 1
-                                headers = {'Content-Type': 'application/json'}
+                headers = {'Content-Type': 'application/json'}
                 card = {
                     "style": "link",
                     "url": "https://pastebin.com/" + paste['key'],
