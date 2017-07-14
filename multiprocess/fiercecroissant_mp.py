@@ -144,6 +144,27 @@ def scrapebin():
                     filename = save_path_img + paste['key']
                 save_paste(filename, paste_data)
                 hits += 1
+                                headers = {'Content-Type': 'application/json'}
+                card = {
+                    "style": "link",
+                    "url": "https://pastebin.com/" + paste['key'],
+                    "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
+                    "title": "Pastebin Hit",
+                    "description": {
+                        "format": "html",
+                        "value": "<b>TEST: New Paste Seen:</b> <a href='https://pastebin.com/'" + paste['key'] + " data-target='hip-connect-tester:hctester.dialog.simple' data-target-options='{\"options\":{\"title\":\"Custom Title\"}, \"parameters\":{\"from\":\"link\"}}'>https://pastebin.com/" + paste['key'] + "</a>"
+                    },
+                    "icon": {
+                        "url": "https://pastebin.com/favicon.ico"
+                    },
+                    "date": 1443057955792
+                }
+
+                data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
+
+                params = {'auth_token': hip_token}
+
+                r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
 
 
         print("\nHits: {0}".format(hits))
