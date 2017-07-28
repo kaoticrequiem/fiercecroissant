@@ -92,11 +92,11 @@ def scrapebin():
 
 
     def save_paste(path, data, separator=None):
-        if separator is None:
-            separator = '\n\n---------- PASTE START ----------\n\n'
+        #if separator is None:
+        #    separator = '\n\n---------- PASTE START ----------\n\n'
 
         with open(path, 'w', encoding='utf-8') as file:
-            file.write(json.dumps(paste, sort_keys=True, indent=3, separators=(',', ': ')) + separator)
+        #    file.write(json.dumps(paste, sort_keys=True, indent=3, separators=(',', ': ')) + separator)
             file.write(data)
 
         return file.closed
@@ -125,7 +125,7 @@ def scrapebin():
             base64reversesort = re.search(r'\Z(AAAMAAQqVT)', paste_data) #Sorting for reversed base64
             hexmatch = re.search(r'(0-9A-F){200,}', paste_data) #Regex for Hex.
             phpmatch = re.search(r'\A(<php\?)', paste_data)
-            imgmatch = re.search(r'\A{data:image', paste_data)
+            imgmatch = re.search(r'\A(data:image)', paste_data)
             if os.path.isfile(filename) or int(paste['size']) < minimum_length:
                 continue
 
