@@ -178,36 +178,40 @@ def decodebase64():
 
     for filename in os.listdir('/home/ubuntu/patrick/pastes/base64pastes/'): # absolute path of saved base64 sorted pastes
         sorted_path = os.path.join('/home/ubuntu/patrick/pastes/base64pastes', filename)
-        raw_text_url = 'http://pastebin.com/raw/'
+        #raw_text_url = 'http://pastebin.com/raw/'
         outputfile = decoded_save_path + filename
-        paste_data = requests.get(raw_text_url + filename).text # get raw base64 text
+        with open(filename, 'r') as f:
+            paste_data = f.read()
         #print (paste_data)
-        response = requests.get(raw_text_url + filename)
-        if response.status_code == 404:
-          continue
-        missing_padding = len(paste_data) % 4
-        if missing_padding != 0:
-            paste_data += b'='* (4 - missing_padding) # fix padding error
-        decoded_paste = base64.b64decode(paste_data)
+        #response = requests.get(raw_text_url + filename)
+        #if response.status_code == 404:
+        #  continue
+            missing_padding = len(paste_data) % 4
+            if missing_padding != 0:
+                paste_data += b'='* (4 - missing_padding) # fix padding error
+            decoded_paste = base64.b64decode(paste_data)
         #print (decoded_paste)
-        writefile(outputfile, decoded_paste) # write pe32exe
-        os.remove(sorted_path)
+            writefile(outputfile, decoded_paste) # write pe32exe
+            os.remove(sorted_path)
+            f.close()
 
 def decodebinary():
     
     for filename in os.listdir('/home/ubuntu/patrick/pastes/binarypastes/'):
         sorted_path = os.path.join('/home/ubuntu/patrick/pastes/binarypastes/', filename)
-        raw_text_url = 'http://pastebin.com/raw/'
+        #raw_text_url = 'http://pastebin.com/raw/'
         length = 8
         outputfile = save_path + filename
-        paste_data = requests.get(raw_text_url + filename).text
-        response = requests.get(raw_text_url + filename)
-        if response.status_code == 404:
-            continue
-        paste_data_length = [paste_data[i:i+length] for i in range(0,len(paste_data),length)]
-        decoded_paste = ''.join([chr(int(c,base=2)) for c in paste_data_length])
-        writefile(outputfile, decoded_paste)
-        os.remove(sorted_path)
+        with open(filename, 'r') as f:
+            paste_data = open(filename, "r")
+        #response = requests.get(raw_text_url + filename)
+        #if response.status_code == 404:
+        #    continue
+            paste_data_length = [paste_data[i:i+length] for i in range(0,len(paste_data),length)]
+            decoded_paste = ''.join([chr(int(c,base=2)) for c in paste_data_length])
+            writefile(outputfile, decoded_paste)
+            os.remove(sorted_path)
+            f.close()
 
 
 def writefile(path, binary):
