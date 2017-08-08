@@ -9,11 +9,6 @@ coll_pasterawunsorted = client.fc.pasterawunsorted
 coll_pastemetadata = client.fc.pastemetadata
 
 paste_data = ""
-#hexmatch1 = re.search(r'\\x\w\w', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
-#hexmatch2 = re.search(r'0[xX][0-9a-fA-F]+', paste_data) #Regex for hex formatted as "0x3E" or "0XC4"
-#stringmatch = re.search(r'(A){10}', paste_data) #Regex for 10 'A's in a row.
-#base64match = re.search(r'\w{30,}', paste_data) #Regex for Base64
-#rmatch = re.search(r'(r)', paste_data)
 save_path = os.getcwd() + '/pastes/'  #Where keyword matching pastes get saved
 save_path_base64 = save_path + '/base64pastes/'
 save_path_hex = save_path + '/hexpastes/'
@@ -42,11 +37,8 @@ def trendscraper():
         line = re.sub('</?paste_url>', '', line)
         paste_key = re.sub('http://pastebin.com/', '', line)
         paste_data = requests.get(raw_text_url + paste_key).text
-        #paste_size = paste['size']
         base64match = re.search(r'\w{200,}', paste_data)
         stringmatch = re.search(r'(A){20}', paste_data)
-        #print("The paste key is " + str(paste_key))
-        #print("The first ten characters are " + str(is_there_something_here))
         if (base64match or stringmatch):
             headers = {'Content-Type': 'application/json'}
             card = {
@@ -108,7 +100,7 @@ def scrapebin():
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             stringmatch = re.search(r'(A){20}', paste_data) #Regex for 10 'A's in a row.
             base64match = re.search(r'\w{200,}', paste_data) #Regex for Base64
-            base64sort = re.search(r'\A(TVqQAAMAAA)', paste_data) #Sorting for base64.
+            base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro))', paste_data) #Sorting for base64.
             binarymatch = re.search(r'(0|1){200,}', paste_data) #Regex for binary.
             base64reversesort = re.search(r'\Z(AAAMAAQqVT)', paste_data) #Sorting for reversed base64
             hexmatch = re.search(r'(0-9A-F){200,}', paste_data) #Regex for Hex.
@@ -121,7 +113,6 @@ def scrapebin():
                 paste_data_dict['nomatch'].append(paste_data)
                 paste_data_dict['pastekey'].append(pastekey)
                 #coll_pasterawunsorted.insert_one(paste_data_dict)
-            #print(paste_data)
             if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text":
                 filename = save_path + paste['key']
                 if (binarymatch and paste_data.isnumeric()):
