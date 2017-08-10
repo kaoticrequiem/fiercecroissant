@@ -57,7 +57,8 @@ def trendscraper():
             }
             data_json = {'message': '<b>Joshtest - trendscraper part: New Paste<b>', 'card': card, 'message_format': 'html'}
             params = {'auth_token': hip_token}
-            r = requests.post('https://api.hipchat.com/v2/room/3370440/notification', data=json.dumps(data_json), headers=headers, params=params)
+            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
+
 
 def scrapebin():
     result_limit = 50
