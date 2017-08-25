@@ -57,8 +57,7 @@ def trendscraper():
             }
             data_json = {'message': '<b>Joshtest - trendscraper part: New Paste<b>', 'card': card, 'message_format': 'html'}
             params = {'auth_token': hip_token}
-            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
-
+            r = requests.post('https://api.hipchat.com/v2/room' + hip_room + '/notification', data=json.dumps(data_json), headers=headers, params=params)
 
 def scrapebin():
     result_limit = 50
@@ -101,11 +100,11 @@ def scrapebin():
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             stringmatch = re.search(r'(A){20}', paste_data) #Regex for 10 'A's in a row.
             base64match = re.search(r'\w{200,}', paste_data) #Regex for Base64
-            base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro))', paste_data) #Sorting for base64.
+            base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Sorting for base64.
             binarymatch = re.search(r'(0|1){200,}', paste_data) #Regex for binary.
             base64reversesort = re.search(r'\Z(AAAMAAQqVT)', paste_data) #Sorting for reversed base64
-            hexmatch = re.search(r'(0-9A-F){200,}', paste_data) #Regex for Hex.
-            phpmatch = re.search(r'\A(<php\?)', paste_data)
+            hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hex.
+            phpmatch = re.search(r'\A(<\?php)', paste_data)
             imgmatch = re.search(r'\A(data:image)', paste_data)
             if os.path.isfile(filename) or int(paste['size']) < minimum_length:
                 continue
@@ -122,7 +121,7 @@ def scrapebin():
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
                     save_paste(filename, paste_data)
-                elif hexmatch:
+                elif (hexmatch or hexmatch2):
                     filename = save_path_hex + paste['key']
                     save_paste(filename, paste_data)
                 elif phpmatch:
