@@ -16,7 +16,10 @@ for filename in os.listdir('/home/ubuntu/patrick/pastes/base64pastes/'): # absol
         missing_padding = len(paste_data) % 4
         if missing_padding != 0:
             paste_data += b'='* (4 - missing_padding) # fix padding error
-        decoded_paste = base64.b64decode(paste_data)
-        writefile(outputfile, decoded_paste) # write pe32exe
-        os.remove(sorted_path)
+        try:
+            decoded_paste = base64.b64decode(paste_data)
+            writefile(outputfile, decoded_paste) # write pe32exe
+            os.remove(sorted_path)
+        except:
+            continue
         f.close()
