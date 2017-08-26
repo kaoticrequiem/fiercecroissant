@@ -83,6 +83,7 @@ def scrapebin():
             file.write(data)
         return file.closed
 
+'''
     def metadatasave():
         pastemetadata_dict['date'].append(paste['date'])
         pastemetadata_dict['key'].append(paste['key'])
@@ -91,7 +92,7 @@ def scrapebin():
         pastemetadata_dict['syntax'].append(paste['syntax'])
         pastemetadata_dict['user'].append(paste['user'])
         pastemetadata_dict['encodingtype'].append(encodingtype)
-
+'''
     
     while True:
         clock = int(time.strftime('%M', time.localtime()))
@@ -131,45 +132,40 @@ def scrapebin():
                         filename = save_path_binary + paste['key']
                         encodingtype = 'binary'
                         save_paste(filename, paste_data)
-                        metadatasave()
                         try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
+                            coll_pastemetadata.insert_one(paste)
                         except:
                             continue
                     elif (base64sort or base64reversesort):
                         filename = save_path_base64 + paste['key']
                         encodingtype = 'base64'
                         save_paste(filename, paste_data)
-                        metadatasave()
                         try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
+                            coll_pastemetadata.insert_one(paste)
                         except:
                             continue
                     elif (hexmatch or hexmatch2):
                         filename = save_path_hex + paste['key']
                         encodingtype = 'hexadecimal'
                         save_paste(filename, paste_data)
-                        metadatasave()
                         try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
+                            coll_pastemetadata.insert_one(paste)
                         except:
                             continue
                     elif phpmatch:
                         filename = save_path_php + paste['key']
                         encodingtype = 'php'
                         save_paste(filename, paste_data)
-                        metadatasave()
                         try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
+                            coll_pastemetadata.insert_one(paste)
                         except:
                             continue
                     elif imgmatch:
                         filename = save_path_img + paste['key']
                         encodingtype = 'img'
                         save_paste(filename, paste_data)
-                        metadatasave()
                         try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
+                            coll_pastemetadata.insert_one(paste)
                         except:
                             continue
                     hits += 1
