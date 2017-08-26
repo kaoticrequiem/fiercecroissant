@@ -84,8 +84,16 @@ def scrapebin():
         return file.closed
 
     def metadatasave():
+        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
+        pastemetadata_dict['date'].append(paste['date'])
+        pastemetadata_dict['key'].append(paste['key'])
+        pastemetadata_dict['size'].append(paste['size'])
+        pastemetadata_dict['expire'].append(paste['expire'])
+        pastemetadata_dict['syntax'].append(paste['syntax'])
+        pastemetadata_dict['user'].append(paste['user'])
+        pastemetadata_dict['encodingtype'].append(encodingtype)
         try:
-            coll_pastemetadata.insert_one(paste, 'encoding':encodingtype)
+            coll_pastemetadata.insert_one(paste)
         except:
             continue
     
