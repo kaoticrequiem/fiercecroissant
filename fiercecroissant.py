@@ -178,7 +178,7 @@ def scrapebin():
                     r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
             print("\nHits: {0}".format(hits))
             print("Waiting...\n\n")
-            time.sleep(sleep_time)
+        time.sleep(sleep_time)
 if __name__ == "__main__":
     while True:
         scrapebin()
