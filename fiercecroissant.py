@@ -132,46 +132,31 @@ def scrapebin():
                         encodingtype = 'binary'
                         save_paste(filename, paste_data)
                         metadatasave()
-                        try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
-                        except:
-                            raise
+                        coll_pastemetadata.insert_one(pastemetadata_dict)
                     elif (base64sort or base64reversesort):
                         filename = save_path_base64 + paste['key']
                         encodingtype = 'base64'
                         save_paste(filename, paste_data)
                         metadatasave()
-                        try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
-                        except:
-                            raise
+                        coll_pastemetadata.insert_one(pastemetadata_dict)
                     elif (hexmatch or hexmatch2):
                         filename = save_path_hex + paste['key']
                         encodingtype = 'hexadecimal'
                         save_paste(filename, paste_data)
                         metadatasave()
-                        try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
-                        except:
-                            raise
+                        coll_pastemetadata.insert_one(pastemetadata_dict)
                     elif phpmatch:
                         filename = save_path_php + paste['key']
                         encodingtype = 'php'
                         save_paste(filename, paste_data)
                         metadatasave()
-                        try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
-                        except:
-                            raise
+                        coll_pastemetadata.insert_one(pastemetadata_dict)
                     elif imgmatch:
                         filename = save_path_img + paste['key']
                         encodingtype = 'img'
                         save_paste(filename, paste_data)
                         metadatasave()
-                        try:
-                            coll_pastemetadata.insert_one(pastemetadata_dict)
-                        except:
-                            raise
+                        coll_pastemetadata.insert_one(pastemetadata_dict)
                     hits += 1
                     headers = {'Content-Type': 'application/json'}
                     card = {
