@@ -84,7 +84,6 @@ def scrapebin():
         return file.closed
 
     def metadatasave():
-        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
         pastemetadata_dict['date'].append(paste['date'])
         pastemetadata_dict['key'].append(paste['key'])
         pastemetadata_dict['size'].append(paste['size'])
@@ -120,8 +119,8 @@ def scrapebin():
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             if os.path.isfile(filename) or int(paste['size']) < minimum_length:
-                continue
-            paste_data_dict = {'nomatch': [], 'pastekey': []}
+                raise
+            pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
             if (hexmatch or stringmatch or base64match or base64sort or binarymatch or base64reversesort or phpmatch or imgmatch) is None:
                 #paste_data_dict['nomatch'].append(paste_data)                
                 #paste_data_dict['pastekey'].append(pastekey)
@@ -136,7 +135,7 @@ def scrapebin():
                         try:
                             coll_pastemetadata.insert_one(pastemetadata_dict)
                         except:
-                            continue
+                            raise
                     elif (base64sort or base64reversesort):
                         filename = save_path_base64 + paste['key']
                         encodingtype = 'base64'
@@ -145,7 +144,7 @@ def scrapebin():
                         try:
                             coll_pastemetadata.insert_one(pastemetadata_dict)
                         except:
-                            continue
+                            raise
                     elif (hexmatch or hexmatch2):
                         filename = save_path_hex + paste['key']
                         encodingtype = 'hexadecimal'
@@ -154,7 +153,7 @@ def scrapebin():
                         try:
                             coll_pastemetadata.insert_one(pastemetadata_dict)
                         except:
-                            continue
+                            raise
                     elif phpmatch:
                         filename = save_path_php + paste['key']
                         encodingtype = 'php'
@@ -163,7 +162,7 @@ def scrapebin():
                         try:
                             coll_pastemetadata.insert_one(pastemetadata_dict)
                         except:
-                            continue
+                            raise
                     elif imgmatch:
                         filename = save_path_img + paste['key']
                         encodingtype = 'img'
@@ -172,7 +171,7 @@ def scrapebin():
                         try:
                             coll_pastemetadata.insert_one(pastemetadata_dict)
                         except:
-                            continue
+                            raise
                     hits += 1
                     headers = {'Content-Type': 'application/json'}
                     card = {
