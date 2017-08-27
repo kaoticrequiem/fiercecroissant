@@ -24,6 +24,7 @@ if not config.has_section('main'):
 hip_token = config.get('main','hip_token')
 pb_devkey = config.get('main', 'pb_devkey')
 hip_room = config.get('main', 'hip_room')
+
 def trendscraper():
     url = 'http://pastebin.com/api/api_post.php'
     payload = {'api_option': 'trends', 'api_dev_key': pb_devkey}
@@ -82,6 +83,19 @@ def scrapebin():
         #    file.write(json.dumps(paste, sort_keys=True, indent=3, separators=(',', ': ')) + separator)
             file.write(data)
         return file.closed
+
+    def metadatasave(paste, encodingtype):
+        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
+        print("The dictionary entry should be blank:") + pastemetadata_dict
+        pastemetadata_dict['date'].append(paste['date'])
+        pastemetadata_dict['key'].append(paste['key'])
+        pastemetadata_dict['size'].append(paste['size'])
+        pastemetadata_dict['expire'].append(paste['expire'])
+        pastemetadata_dict['syntax'].append(paste['syntax'])
+        pastemetadata_dict['user'].append(paste['user'])
+        pastemetadata_dict['encodingtype'].append(encodingtype)
+        print("The dictionary entry is now:") + pastemetadata_dict
+
     
     while True:
         clock = int(time.strftime('%M', time.localtime()))
@@ -110,7 +124,7 @@ def scrapebin():
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             if os.path.isfile(filename) or int(paste['size']) < minimum_length:
                 continue
-            pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
+            
             if (hexmatch or stringmatch or base64match or base64sort or binarymatch or base64reversesort or phpmatch or imgmatch) is None:
                 #paste_data_dict['nomatch'].append(paste_data)                
                 #paste_data_dict['pastekey'].append(pastekey)
@@ -121,40 +135,45 @@ def scrapebin():
                         filename = save_path_binary + paste['key']
                         encodingtype = 'binary'
                         save_paste(filename, paste_data)
+                        metadata = metadatasave(paste, encodingtype)
                         try:
-                            coll_pastemetadata.insert_one(paste)
+                            coll_pastemetadata.insert_one(metadata)
                         except:
                             continue
                     elif (base64sort or base64reversesort):
                         filename = save_path_base64 + paste['key']
                         encodingtype = 'base64'
                         save_paste(filename, paste_data)
+                        metadata = metadatasave(paste, encodingtype)
                         try:
-                            coll_pastemetadata.insert_one(paste)
+                            coll_pastemetadata.insert_one(metadata)
                         except:
                             continue
                     elif (hexmatch or hexmatch2):
                         filename = save_path_hex + paste['key']
                         encodingtype = 'hexadecimal'
                         save_paste(filename, paste_data)
+                        metadata = metadatasave(paste, encodingtype)
                         try:
-                            coll_pastemetadata.insert_one(paste)
+                            coll_pastemetadata.insert_one(metadata)
                         except:
                             continue
                     elif phpmatch:
                         filename = save_path_php + paste['key']
                         encodingtype = 'php'
                         save_paste(filename, paste_data)
-                        try:
-                            coll_pastemetadata.insert_one(paste)
+                        metadata = metadatasave(paste, encodingtype)
+                        try:    
+                            coll_pastemetadata.insert_one(metadata)
                         except:
                             continue
                     elif imgmatch:
                         filename = save_path_img + paste['key']
                         encodingtype = 'img'
                         save_paste(filename, paste_data)
+                        metadata = metadatasave(paste, encodingtype)
                         try:
-                            coll_pastemetadata.insert_one(paste)
+                            coll_pastemetadata.insert_one(metadata)
                         except:
                             continue
                     hits += 1
@@ -177,8 +196,8 @@ def scrapebin():
                     params = {'auth_token': hip_token}
                     r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
             print("\nHits: {0}".format(hits))
-            print("Waiting...\n\n")
-            time.sleep(sleep_time)
+        print("Waiting...\n\n")
+        time.sleep(sleep_time)
 
 if __name__ == "__main__":
     while True:
