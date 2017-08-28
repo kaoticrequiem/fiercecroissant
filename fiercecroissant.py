@@ -87,13 +87,13 @@ def scrapebin():
     def metadatasave(paste, encodingtype):
         pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
         print("The dictionary entry should be blank:") + pastemetadata_dict
-        pastemetadata_dict['date'].append(paste['date'])
-        pastemetadata_dict['key'].append(paste['key'])
-        pastemetadata_dict['size'].append(paste['size'])
-        pastemetadata_dict['expire'].append(paste['expire'])
-        pastemetadata_dict['syntax'].append(paste['syntax'])
-        pastemetadata_dict['user'].append(paste['user'])
-        pastemetadata_dict['encodingtype'].append(encodingtype)
+        pastemetadata_dict['date'] = paste['date']
+        pastemetadata_dict['key'] = paste['key']
+        pastemetadata_dict['size'] = paste['size']
+        pastemetadata_dict['expire'] = paste['expire']
+        pastemetadata_dict['syntax'] = paste['syntax']
+        pastemetadata_dict['user'] = paste['user']
+        pastemetadata_dict['encodingtype'] = encodingtype
         print("The dictionary entry is now:") + pastemetadata_dict
 
     
