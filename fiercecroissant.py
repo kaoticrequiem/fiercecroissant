@@ -125,76 +125,76 @@ def scrapebin():
             if os.path.isfile(filename) or int(paste['size']) < minimum_length:
                 continue
             
-            if (hexmatch or stringmatch or base64match or base64sort or binarymatch or base64reversesort or phpmatch or imgmatch) is None:
+            #if (hexmatch or stringmatch or base64match or base64sort or binarymatch or base64reversesort or phpmatch or imgmatch) is None:
                 #paste_data_dict['nomatch'].append(paste_data)                
                 #paste_data_dict['pastekey'].append(pastekey)
                 #coll_pasterawunsorted.insert_one(paste_data_dict)
-                if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text":
-                    filename = save_path + paste['key']
-                    if (binarymatch and paste_data.isnumeric()):
-                        filename = save_path_binary + paste['key']
-                        encodingtype = 'binary'
-                        save_paste(filename, paste_data)
-                        metadata = metadatasave(paste, encodingtype)
-                        try:
-                            coll_pastemetadata.insert_one(metadata)
-                        except:
-                            continue
-                    elif (base64sort or base64reversesort):
-                        filename = save_path_base64 + paste['key']
-                        encodingtype = 'base64'
-                        save_paste(filename, paste_data)
-                        metadata = metadatasave(paste, encodingtype)
-                        try:
-                            coll_pastemetadata.insert_one(metadata)
-                        except:
-                            continue
-                    elif (hexmatch or hexmatch2):
-                        filename = save_path_hex + paste['key']
-                        encodingtype = 'hexadecimal'
-                        save_paste(filename, paste_data)
-                        metadata = metadatasave(paste, encodingtype)
-                        try:
-                            coll_pastemetadata.insert_one(metadata)
-                        except:
-                            continue
-                    elif phpmatch:
-                        filename = save_path_php + paste['key']
-                        encodingtype = 'php'
-                        save_paste(filename, paste_data)
-                        metadata = metadatasave(paste, encodingtype)
-                        try:    
-                            coll_pastemetadata.insert_one(metadata)
-                        except:
-                            continue
-                    elif imgmatch:
-                        filename = save_path_img + paste['key']
-                        encodingtype = 'img'
-                        save_paste(filename, paste_data)
-                        metadata = metadatasave(paste, encodingtype)
-                        try:
-                            coll_pastemetadata.insert_one(metadata)
-                        except:
-                            continue
-                    hits += 1
-                    headers = {'Content-Type': 'application/json'}
-                    card = {
-                        "style": "link",
-                        "url": "https://pastebin.com/" + paste['key'],
-                        "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
-                        "title": "Pastebin Hit",
-                        "description": {
-                            "format": "html",
-                            "value": "<b>TEST: New Paste Seen:</b> <a href='https://pastebin.com/'" + paste['key'] + " data-target='hip-connect-tester:hctester.dialog.simple' data-target-options='{\"options\":{\"title\":\"Custom Title\"}, \"parameters\":{\"from\":\"link\"}}'>https://pastebin.com/" + paste['key'] + "</a>"
-                        },
-                        "icon": {
-                            "url": "https://pastebin.com/favicon.ico"
-                        },
-                        "date": 1443057955792
-                    }
-                    data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
-                    params = {'auth_token': hip_token}
-                    r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
+            if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text":
+                filename = save_path + paste['key']
+                if (binarymatch and paste_data.isnumeric()):
+                    filename = save_path_binary + paste['key']
+                    encodingtype = 'binary'
+                    save_paste(filename, paste_data)
+                    metadata = metadatasave(paste, encodingtype)
+                    try:
+                        coll_pastemetadata.insert_one(metadata)
+                    except:
+                        continue
+                elif (base64sort or base64reversesort):
+                    filename = save_path_base64 + paste['key']
+                    encodingtype = 'base64'
+                    save_paste(filename, paste_data)
+                    metadata = metadatasave(paste, encodingtype)
+                    try:
+                        coll_pastemetadata.insert_one(metadata)
+                    except:
+                        continue
+                elif (hexmatch or hexmatch2):
+                    filename = save_path_hex + paste['key']
+                    encodingtype = 'hexadecimal'
+                    save_paste(filename, paste_data)
+                    metadata = metadatasave(paste, encodingtype)
+                    try:
+                        coll_pastemetadata.insert_one(metadata)
+                    except:
+                        continue
+                elif phpmatch:
+                    filename = save_path_php + paste['key']
+                    encodingtype = 'php'
+                    save_paste(filename, paste_data)
+                    metadata = metadatasave(paste, encodingtype)
+                    try:    
+                        coll_pastemetadata.insert_one(metadata)
+                    except:
+                        continue
+                elif imgmatch:
+                    filename = save_path_img + paste['key']
+                    encodingtype = 'img'
+                    save_paste(filename, paste_data)
+                    metadata = metadatasave(paste, encodingtype)
+                    try:
+                        coll_pastemetadata.insert_one(metadata)
+                    except:
+                        continue
+                hits += 1
+                headers = {'Content-Type': 'application/json'}
+                card = {
+                    "style": "link",
+                    "url": "https://pastebin.com/" + paste['key'],
+                    "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
+                    "title": "Pastebin Hit",
+                    "description": {
+                        "format": "html",
+                        "value": "<b>TEST: New Paste Seen:</b> <a href='https://pastebin.com/'" + paste['key'] + " data-target='hip-connect-tester:hctester.dialog.simple' data-target-options='{\"options\":{\"title\":\"Custom Title\"}, \"parameters\":{\"from\":\"link\"}}'>https://pastebin.com/" + paste['key'] + "</a>"
+                    },
+                    "icon": {
+                        "url": "https://pastebin.com/favicon.ico"
+                    },
+                    "date": 1443057955792
+                }
+                data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
+                params = {'auth_token': hip_token}
+                r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
             print("\nHits: {0}".format(hits))
         print("Waiting...\n\n")
         time.sleep(sleep_time)
