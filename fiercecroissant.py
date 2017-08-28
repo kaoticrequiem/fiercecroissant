@@ -86,15 +86,12 @@ def scrapebin():
 
     def metadatasave(paste, encodingtype):
         pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
-        print("The dictionary entry should be blank:") + pastemetadata_dict
-        pastemetadata_dict['date'] = paste['date']
-        pastemetadata_dict['key'] = paste['key']
-        pastemetadata_dict['size'] = paste['size']
-        pastemetadata_dict['expire'] = paste['expire']
-        pastemetadata_dict['syntax'] = paste['syntax']
-        pastemetadata_dict['user'] = paste['user']
-        pastemetadata_dict['encodingtype'] = encodingtype
-        print("The dictionary entry is now:") + pastemetadata_dict
+        print("The dictionary entry should be blank:")
+        print(pastemetadata_dict)
+        pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
+        print("The dictionary entry is now:")
+        print(pastemetadata_dict)
+        return pastemetadata_dict
 
     
     while True:
@@ -139,6 +136,7 @@ def scrapebin():
                     try:
                         coll_pastemetadata.insert_one(metadata)
                     except:
+                        raise
                         continue
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
@@ -148,6 +146,7 @@ def scrapebin():
                     try:
                         coll_pastemetadata.insert_one(metadata)
                     except:
+                        raise
                         continue
                 elif (hexmatch or hexmatch2):
                     filename = save_path_hex + paste['key']
@@ -157,6 +156,7 @@ def scrapebin():
                     try:
                         coll_pastemetadata.insert_one(metadata)
                     except:
+                        raise
                         continue
                 elif phpmatch:
                     filename = save_path_php + paste['key']
@@ -166,6 +166,7 @@ def scrapebin():
                     try:    
                         coll_pastemetadata.insert_one(metadata)
                     except:
+                        raise
                         continue
                 elif imgmatch:
                     filename = save_path_img + paste['key']
@@ -175,6 +176,7 @@ def scrapebin():
                     try:
                         coll_pastemetadata.insert_one(metadata)
                     except:
+                        raise
                         continue
                 hits += 1
                 headers = {'Content-Type': 'application/json'}
