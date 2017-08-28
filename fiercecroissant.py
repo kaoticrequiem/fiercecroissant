@@ -135,8 +135,7 @@ def scrapebin():
                     metadata = metadatasave(paste, encodingtype)
                     try:
                         coll_pastemetadata.insert_one(metadata)
-                    except:
-                        raise
+                    except pymongo.errors.DuplicateKeyError:
                         continue
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
@@ -145,8 +144,7 @@ def scrapebin():
                     metadata = metadatasave(paste, encodingtype)
                     try:
                         coll_pastemetadata.insert_one(metadata)
-                    except:
-                        raise
+                    except pymongo.errors.DuplicateKeyError:
                         continue
                 elif (hexmatch or hexmatch2):
                     filename = save_path_hex + paste['key']
@@ -155,8 +153,7 @@ def scrapebin():
                     metadata = metadatasave(paste, encodingtype)
                     try:
                         coll_pastemetadata.insert_one(metadata)
-                    except:
-                        raise
+                    except pymongo.errors.DuplicateKeyError:
                         continue
                 elif phpmatch:
                     filename = save_path_php + paste['key']
@@ -165,8 +162,7 @@ def scrapebin():
                     metadata = metadatasave(paste, encodingtype)
                     try:    
                         coll_pastemetadata.insert_one(metadata)
-                    except:
-                        raise
+                    except pymongo.errors.DuplicateKeyError:
                         continue
                 elif imgmatch:
                     filename = save_path_img + paste['key']
@@ -175,8 +171,7 @@ def scrapebin():
                     metadata = metadatasave(paste, encodingtype)
                     try:
                         coll_pastemetadata.insert_one(metadata)
-                    except:
-                        raise
+                    except pymongo.errors.DuplicateKeyError:
                         continue
                 hits += 1
                 headers = {'Content-Type': 'application/json'}
