@@ -121,58 +121,38 @@ def scrapebin():
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             if os.path.isfile(filename) or int(paste['size']) < minimum_length:
                 continue
-            
-            #if (hexmatch or stringmatch or base64match or base64sort or binarymatch or base64reversesort or phpmatch or imgmatch) is None:
-                #paste_data_dict['nomatch'].append(paste_data)                
-                #paste_data_dict['pastekey'].append(pastekey)
-                #coll_pasterawunsorted.insert_one(paste_data_dict)
-            if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text":
+            if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 filename = save_path + paste['key']
                 if (binarymatch and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
-                    try:
-                        coll_pastemetadata.insert_one(metadata)
-                    except pymongo.errors.DuplicateKeyError:
-                        continue
+                    coll_pastemetadata.insert_one(metadata)
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'base64'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype)
-                    try:
-                        coll_pastemetadata.insert_one(metadata)
-                    except pymongo.errors.DuplicateKeyError:
-                        continue
+                    metadata = metadatasave(paste, encodingtype) 
+                    coll_pastemetadata.insert_one(metadata)
                 elif (hexmatch or hexmatch2):
                     filename = save_path_hex + paste['key']
                     encodingtype = 'hexadecimal'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
-                    try:
-                        coll_pastemetadata.insert_one(metadata)
-                    except pymongo.errors.DuplicateKeyError:
-                        continue
+                    coll_pastemetadata.insert_one(metadata)
                 elif phpmatch:
                     filename = save_path_php + paste['key']
                     encodingtype = 'php'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
-                    try:    
-                        coll_pastemetadata.insert_one(metadata)
-                    except pymongo.errors.DuplicateKeyError:
-                        continue
+                    coll_pastemetadata.insert_one(metadata)
                 elif imgmatch:
                     filename = save_path_img + paste['key']
                     encodingtype = 'img'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
-                    try:
-                        coll_pastemetadata.insert_one(metadata)
-                    except pymongo.errors.DuplicateKeyError:
-                        continue
+                    coll_pastemetadata.insert_one(metadata)
                 hits += 1
                 headers = {'Content-Type': 'application/json'}
                 card = {
