@@ -86,13 +86,28 @@ def scrapebin():
 
     def metadatasave(paste, encodingtype):
         pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
-        print("The dictionary entry should be blank:")
-        print(pastemetadata_dict)
         pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
-        print("The dictionary entry is now:")
-        print(pastemetadata_dict)
         return pastemetadata_dict
 
+    def hipchatpost()
+        headers = {'Content-Type': 'application/json'}
+        card = {
+            "style": "link",
+            "url": paste_url 
+            "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
+            "title": "Pastebin Hit",
+            "description": {
+                "format": "html",
+                "value": "<b>TEST: New Paste Seen:</b>" + paste_url + " Encoded as:" + encodingtype
+                    },
+        "icon": {
+            "url": "https://pastebin.com/favicon.ico"
+                    },
+        "date": 1443057955792
+        }
+        data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
+        params = {'auth_token': hip_token}
+        r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
     
     while True:
         clock = int(time.strftime('%M', time.localtime()))
@@ -106,10 +121,8 @@ def scrapebin():
             paste_data = http_get(paste['scrape_url']).text
             paste_lang = paste['syntax']
             paste_size = paste['size']
+            paste_url = paste['full_url']
             print('\rScraping: {0} / {1}'.format(i + 1, result_limit))
-            filename = save_path + paste['key']
-            #coll_pastemetadata.insert_one(paste)
-
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             stringmatch = re.search(r'(A){20}', paste_data) #Searching for 10 'A's in a row.
             base64match = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
@@ -119,8 +132,6 @@ def scrapebin():
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
-            if os.path.isfile(filename) or int(paste['size']) < minimum_length:
-                continue
             if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 filename = save_path + paste['key']
                 if (binarymatch and paste_data.isnumeric()):
@@ -129,49 +140,36 @@ def scrapebin():
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'base64'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype) 
                     coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
                 elif (hexmatch or hexmatch2):
                     filename = save_path_hex + paste['key']
                     encodingtype = 'hexadecimal'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
                 elif phpmatch:
                     filename = save_path_php + paste['key']
                     encodingtype = 'php'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
                 elif imgmatch:
                     filename = save_path_img + paste['key']
                     encodingtype = 'img'
                     save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
                 hits += 1
-                headers = {'Content-Type': 'application/json'}
-                card = {
-                    "style": "link",
-                    "url": "https://pastebin.com/" + paste['key'],
-                    "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
-                    "title": "Pastebin Hit",
-                    "description": {
-                        "format": "html",
-                        "value": "<b>TEST: New Paste Seen:</b> <a href='https://pastebin.com/'" + paste['key'] + " data-target='hip-connect-tester:hctester.dialog.simple' data-target-options='{\"options\":{\"title\":\"Custom Title\"}, \"parameters\":{\"from\":\"link\"}}'>https://pastebin.com/" + paste['key'] + "</a>"
-                    },
-                    "icon": {
-                        "url": "https://pastebin.com/favicon.ico"
-                    },
-                    "date": 1443057955792
-                }
-                data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
-                params = {'auth_token': hip_token}
-                r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
             print("\nHits: {0}".format(hits))
         print("Waiting...\n\n")
         time.sleep(sleep_time)
