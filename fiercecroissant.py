@@ -61,8 +61,12 @@ def trendscraper():
             r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
 
 
+def scrapebin():
+    result_limit = 50
+    sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
+    minimum_length = 10  # ignore pastes shorter than this
 
-def http_get(url, params=None, tries=0):
+    def http_get(url, params=None, tries=0):
     if params is None:
         params = {}
     if tries > 10:
@@ -73,43 +77,38 @@ def http_get(url, params=None, tries=0):
     time.sleep(1)
     return http_get(url, params, tries + 1)
 
-def save_paste(path, data, separator=None):
-    #if separator is None:
-    #    separator = '\n\n---------- PASTE START ----------\n\n'
-    with open(path, 'w', encoding='utf-8') as file:
-    #    file.write(json.dumps(paste, sort_keys=True, indent=3, separators=(',', ': ')) + separator)
-        file.write(data)
-    return file.closed
+    def save_paste(path, data, separator=None):
+        #if separator is None:
+        #    separator = '\n\n---------- PASTE START ----------\n\n'
+        with open(path, 'w', encoding='utf-8') as file:
+        #    file.write(json.dumps(paste, sort_keys=True, indent=3, separators=(',', ': ')) + separator)
+            file.write(data)
+        return file.closed
 
-def metadatasave(paste, encodingtype):
-    pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
-    pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
-    return pastemetadata_dict
+    def metadatasave(paste, encodingtype):
+        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
+        pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
+        return pastemetadata_dict
 
-def hipchatpost():
-    headers = {'Content-Type': 'application/json'}
-    card = {
-        "style": "link",
-        "url": paste_url,
-        "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
-        "title": "Pastebin Hit",
-        "description": {
-            "format": "html",
-            "value": "<b>TEST: New Paste Seen:</b>" + paste_url + " Encoded as:" + encodingtype
-                },
-    "icon": {
-        "url": "https://pastebin.com/favicon.ico"
-                },
-    "date": 1443057955792
-    }
-    data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
-    params = {'auth_token': hip_token}
-    r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
-
-def scrapebin():
-    result_limit = 50
-    sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
-    minimum_length = 10  # ignore pastes shorter than this
+    def hipchatpost():
+        headers = {'Content-Type': 'application/json'}
+        card = {
+            "style": "link",
+            "url": paste_url,
+            "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
+            "title": "Pastebin Hit",
+            "description": {
+                "format": "html",
+                "value": "<b>TEST: New Paste Seen:</b>" + paste_url + " Encoded as:" + encodingtype
+                    },
+        "icon": {
+            "url": "https://pastebin.com/favicon.ico"
+                    },
+        "date": 1443057955792
+        }
+        data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
+        params = {'auth_token': hip_token}
+        r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
 
     while True:
         clock = int(time.strftime('%M', time.localtime()))
