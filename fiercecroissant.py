@@ -89,11 +89,11 @@ def scrapebin():
         pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
         return pastemetadata_dict
 
-    def hipchatpost()
+    def hipchatpost():
         headers = {'Content-Type': 'application/json'}
         card = {
             "style": "link",
-            "url": paste_url 
+            "url": paste_url,
             "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
             "title": "Pastebin Hit",
             "description": {
