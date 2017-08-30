@@ -173,7 +173,7 @@ def scrapebin():
                 else:
                     filename = save_path + paste['key']
                     encodingtype = 'other'
-                    save_paste(filename, data)
+                    save_paste(filename, paste_data)
                     metadata = metadatasave(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
