@@ -67,15 +67,15 @@ def scrapebin():
     minimum_length = 10  # ignore pastes shorter than this
 
     def http_get(url, params=None, tries=0):
-    if params is None:
-        params = {}
-    if tries > 10:
-        sys.exit('Exceeded 10 fetch retries. Are you banned?')
-    res = requests.get(url, params, timeout=(4, 5))
-    if res.status_code == requests.codes.ok:
-        return res
-    time.sleep(1)
-    return http_get(url, params, tries + 1)
+        if params is None:
+            params = {}
+        if tries > 10:
+            sys.exit('Exceeded 10 fetch retries. Are you banned?')
+        res = requests.get(url, params, timeout=(4, 5))
+        if res.status_code == requests.codes.ok:
+            return res
+        time.sleep(1)
+        return http_get(url, params, tries + 1)
 
     def save_paste(path, data, separator=None):
         #if separator is None:
