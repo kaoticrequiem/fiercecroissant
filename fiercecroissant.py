@@ -71,7 +71,10 @@ def scrapebin():
             params = {}
         if tries > 10:
             sys.exit('Exceeded 10 fetch retries. Are you banned?')
-        res = requests.get(url, params, timeout=(4, 5))
+        try:
+            res = requests.get(url, params, timeout=(4, 10))
+        except requests.exceptions.Timeout:
+            continue
         if res.status_code == requests.codes.ok:
             return res
         time.sleep(1)
