@@ -74,7 +74,7 @@ def scrapebin():
         try:
             res = requests.get(url, params, timeout=(4, 10))
         except requests.exceptions.Timeout:
-            continue
+            pass
         if res.status_code == requests.codes.ok:
             return res
         time.sleep(1)
