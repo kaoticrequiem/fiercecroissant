@@ -2,6 +2,8 @@
 import requests, json, time, sys, os, re, configparser, base64
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 client = MongoClient('localhost:27017')
 db = client.fc
@@ -65,7 +67,7 @@ def scrapebin():
     sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
     minimum_length = 10  # ignore pastes shorter than this
     
-    def http_get(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
+    def requests_retry_session(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
         session = session or requests.Session()
         retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
         adapter = HTTPAdapter(max_retries=retry)
@@ -110,7 +112,7 @@ def scrapebin():
         else:
             print("Waiting for new trends.")
         hits = 0
-        recent_items = http_get('http://pastebin.com/api_scraping.php', params={'limit': result_limit}).json()
+        recent_items = response = requests_retry_session().get('http://pastebin.com/api_scraping.php', params={'limit': 50}).json()
         for i, paste in enumerate(recent_items):
             paste_data = http_get(paste['scrape_url']).text
             paste_lang = paste['syntax']
