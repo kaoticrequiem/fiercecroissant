@@ -60,7 +60,8 @@ def trendscraper():
             }
             data_json = {'message': '<b>Joshtest - trendscraper part: New Paste<b>', 'card': card, 'message_format': 'html'}
             params = {'auth_token': hip_token}
-            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json), headers=headers, params=params)
+            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
+
 
 def scrapebin():
     result_limit = 50
@@ -104,7 +105,7 @@ def scrapebin():
         data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
         params = {'auth_token': hip_token}
         r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
-    
+
     while True:
         clock = int(time.strftime('%M', time.localtime()))
         if clock == 5:
@@ -129,7 +130,6 @@ def scrapebin():
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
-                filename = save_path + paste['key']
                 if (binarymatch and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
@@ -165,11 +165,17 @@ def scrapebin():
                     metadata = metadatasave(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
+                else:
+                    filename = save_path + paste['key']
+                    encodingtype = 'other'
+                    save_paste(filename, paste_data)
+                    metadata = metadatasave(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
                 hits += 1
             print("\nHits: {0}".format(hits))
         print("Waiting...\n\n")
         time.sleep(sleep_time)
-
 if __name__ == "__main__":
     while True:
         scrapebin()
