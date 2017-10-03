@@ -65,22 +65,16 @@ def scrapebin():
     sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
     minimum_length = 10  # ignore pastes shorter than this
     
-    def http_get(url, params=None, tries=0):
-        if params is None:
-            params = {}
-        if tries > 10:
-            sys.exit('Exceeded 10 fetch retries. Are you banned?')
-        res = requests.get(url, params, timeout=(4, 5))
-        if res.status_code == requests.codes.ok:
-            return res
-        time.sleep(1)
-        return http_get(url, params, tries + 1)
+    def http_get(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
+        session = session or requests.Session()
+        retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+        return session
     
-    def save_paste(path, data, separator=None):
-        #if separator is None:
-        #    separator = '\n\n---------- PASTE START ----------\n\n'
+    def save_paste(path, data):
         with open(path, 'w', encoding='utf-8') as file:
-        #    file.write(json.dumps(paste, sort_keys=True, indent=3, separators=(',', ': ')) + separator)
             file.write(data)
         return file.closed
 
