@@ -114,8 +114,8 @@ def scrapebin():
             print("Waiting for new trends.")
         hits = 0
         recent_items = response = requests_retry_session().get('http://pastebin.com/api_scraping.php', params={'limit': 50}).json()
-        for i, paste in enumerate(recent_items):
-            paste_data = http_get(paste['scrape_url']).text
+        for i, paste in requests_retry_session(recent_items):
+            paste_data = requests_retry_session(paste['scrape_url']).text
             paste_lang = paste['syntax']
             paste_size = paste['size']
             paste_url = paste['full_url']
