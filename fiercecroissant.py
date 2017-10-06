@@ -17,6 +17,7 @@ save_path_hex = save_path + '/hexpastes/'
 save_path_binary = save_path + '/binarypastes/'
 save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
+
 # Config
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -27,52 +28,15 @@ hip_token = config.get('main','hip_token')
 pb_devkey = config.get('main', 'pb_devkey')
 hip_room = config.get('main', 'hip_room')
 
-def trendscraper():
-    url = 'http://pastebin.com/api/api_post.php'
-    payload = {'api_option': 'trends', 'api_dev_key': pb_devkey}
-    r = requests.post(url, payload)
-    pastetrend = r.text
-    soup = BeautifulSoup(pastetrend, "lxml")
-    raw_url = (soup.findAll("paste_url"))
-    raw_text_url = 'http://pastebin.com/raw/'
-    for line in raw_url:
-        line = str(line)
-        line = re.sub('</?paste_url>', '', line)
-        paste_key = re.sub('http://pastebin.com/', '', line)
-        paste_data = requests.get(raw_text_url + paste_key).text
-        base64match = re.search(r'\w{200,}', paste_data)
-        stringmatch = re.search(r'(A){20}', paste_data)
-        if (base64match or stringmatch):
-            headers = {'Content-Type': 'application/json'}
-            card = {
-                "style": "link",
-                "url": line,
-                "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
-                "title": "Pastebin Hit",
-                "description": {
-                    "format": "html",
-                    "value": "<b>New Paste Seen: </b>" + line,
-                },
-                 "icon": {
-                      "url": "https://pastebin.com/favicon.ico"
-                },
-                "date": 1443057955792
-            }
-            data_json = {'message': '<b>Joshtest - trendscraper part: New Paste<b>', 'card': card, 'message_format': 'html'}
-            params = {'auth_token': hip_token}
-            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
-
 
 def scrapebin():
     result_limit = 50
     sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
-    minimum_length = 10  # ignore pastes shorter than this
     
     def requests_retry_session(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
         session = session or requests.Session()
         retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
+        adapter = HTTPAdapter(max_retries=retry)      
         session.mount('https://', adapter)
         return session
     
@@ -81,7 +45,7 @@ def scrapebin():
             file.write(data)
         return file.closed
 
-    def metadatasave(paste, encodingtype):
+    def save_metadata(paste, encodingtype):
         pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
         pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
         return pastemetadata_dict
@@ -95,7 +59,7 @@ def scrapebin():
             "title": "Pastebin Hit",
             "description": {
                 "format": "html",
-                "value": "<b>TEST: New Paste Seen:</b>" + paste_url + " Encoded as:" + encodingtype
+                "value": "<b>New Paste Seen:</b>" + paste_url + " Encoded as:" + encodingtype
                     },
         "icon": {
             "url": "https://pastebin.com/favicon.ico"
@@ -107,15 +71,10 @@ def scrapebin():
         r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
 
     while True:
-        clock = int(time.strftime('%M', time.localtime()))
-        if clock == 5:
-            trendscraper()
-        else:
-            print("Waiting for new trends.")
         hits = 0
-        recent_items = requests_retry_session().get('http://pastebin.com/api_scraping.php', params={'limit': 50}).json()
+        recent_items = requests_retry_session().get('https://pastebin.com/api_scraping.php', params={'limit': 50}).json()
         for i, paste in enumerate(recent_items):
-            paste_data = paste['scrape_url'].text
+            paste_data = requests.get(paste['scrape_url']).text
             paste_lang = paste['syntax']
             paste_size = paste['size']
             paste_url = paste['full_url']
@@ -134,42 +93,42 @@ def scrapebin():
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 elif (base64sort or base64reversesort):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'base64'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype) 
+                    metadata = save_metadata(paste, encodingtype) 
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 elif (hexmatch or hexmatch2):
                     filename = save_path_hex + paste['key']
                     encodingtype = 'hexadecimal'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 elif phpmatch:
                     filename = save_path_php + paste['key']
                     encodingtype = 'php'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 elif imgmatch:
                     filename = save_path_img + paste['key']
                     encodingtype = 'img'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 else:
                     filename = save_path + paste['key']
                     encodingtype = 'other'
                     save_paste(filename, paste_data)
-                    metadata = metadatasave(paste, encodingtype)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 hits += 1
