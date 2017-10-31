@@ -1,4 +1,4 @@
-import base64, os, requests
+import base64, os
 
 base64directory = os.getcwd() + '/pastes/base64pastes/' #relative path of Base64 pastes.
 save_path = os.getcwd() + '/decodedexes/' #relative path of stored executables.
