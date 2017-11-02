@@ -51,6 +51,7 @@ def scrapebin():
         return pastemetadata_dict
 
     def hipchatpost():
+        #Alerts a HipChat room about a new paste.
         headers = {'Content-Type': 'application/json'}
         card = {
             "style": "link",
@@ -79,17 +80,17 @@ def scrapebin():
             paste_size = paste['size']
             paste_url = paste['full_url']
             print('\rScraping: {0} / {1}'.format(i + 1, result_limit))
+            stringmatch = re.search(r'(A){20}', paste_data) #Searching for 20 'A's in a row.
+            nonwordmatch = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
+            base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure for an MZ executable.
+            base64reversesort = re.search(r'\Z((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
+            binarysort = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
-            stringmatch = re.search(r'(A){20}', paste_data) #Searching for 10 'A's in a row.
-            base64match = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
-            base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure.
-            binarymatch = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
-            base64reversesort = re.search(r'\Z(AAAMAAQqVT)', paste_data) #Searches the end of the paste for reversed Base64 encoding structure.
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
-            if ((base64match or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
-                if (binarymatch and paste_data.isnumeric()):
+            if ((nonwordmatch or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
+                if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
                     save_paste(filename, paste_data)
