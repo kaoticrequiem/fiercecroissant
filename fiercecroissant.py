@@ -83,7 +83,7 @@ def scrapebin():
             stringmatch = re.search(r'(A){20}', paste_data) #Searching for 20 'A's in a row.
             nonwordmatch = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
             base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure for an MZ executable.
-            base64reversesort = re.search(r'\Z((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
+            base64reversesort = re.search(r'((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)\Z', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
             binarysort = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
