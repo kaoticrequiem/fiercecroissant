@@ -14,7 +14,7 @@ FierceCroissant uses Python 3. In addition, paste metadata is saved in a Mongo D
 
 FierceCroissant looks through the text of the 50 most recent pastes uploaded to pastebin. If the text size is over 40K and contains a string of 200 characters or more, it and its metadata will be saved. The text is then evaluated on its characteristics, and saved in a folder based on those characteristics performed by a regex search:
 
-Pastes  that begin with "TVoA", "TVpB", "TVpQ", "TVqA", "TVqQ", or "TVro" may be Base64 snippers that decode to strings that begin with MZ (0x4d5a), and are thus MZ Executatble files. They are saved in the /base64pastes/ folder. (re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA|ro))'))
+Pastes that begin with "TVoA", "TVpB", "TVpQ", "TVqA", "TVqQ", or "TVro" may be Base64 snippets that decode to strings that begin with MZ (0x4d5a), and are thus MZ Executatble files. They are saved in the /base64pastes/ folder. (re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA|ro))'))
 
 Strings that are made up of only 0 or 1 are saved in the /binarypastes/ folder.
 
