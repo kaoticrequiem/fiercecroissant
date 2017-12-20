@@ -72,7 +72,7 @@ def scrapebin():
         try:
             r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
         except:
-            continue
+            pass
 
     while True:
         hits = 0
