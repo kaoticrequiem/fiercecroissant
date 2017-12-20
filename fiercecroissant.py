@@ -84,15 +84,17 @@ def scrapebin():
             paste_url = paste['full_url']
             print('\rScraping: {0} / {1}'.format(i + 1, result_limit))
             stringmatch = re.search(r'(A){20}', paste_data) #Searching for 20 'A's in a row.
+            stringmatch_76 = re.search(r'(A){76}', paste_data) #Searching for 76 'A's in a row.
             nonwordmatch = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
             base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure for an MZ executable.
             base64reversesort = re.search(r'((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)\Z', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
             binarysort = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
+            hexmatch3 = re.search(r'[0-9A-F\s]{200,}', paste_data) #Regex for hex formatted as "4D ", "5A ", "00 " in groups of 200.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
-            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64sort or base64reversesort))) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
+            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64sort or base64reversesort)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
@@ -107,7 +109,7 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype) 
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
-                elif (hexmatch or hexmatch2):
+                elif (hexmatch or hexmatch2 or hexmatch3):
                     filename = save_path_hex + paste['key']
                     encodingtype = 'hexadecimal'
                     save_paste(filename, paste_data)
