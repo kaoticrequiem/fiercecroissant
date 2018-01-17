@@ -17,6 +17,7 @@ save_path_hex = save_path + '/hexpastes/'
 save_path_binary = save_path + '/binarypastes/'
 save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
+save_path_ascii = save_path + '/asciipastes/'
 
 # Config
 config = configparser.ConfigParser()
@@ -94,6 +95,7 @@ def scrapebin():
             hexmatch3 = re.search(r'([0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ]){150,}', paste_data) #Regex for hex formatted as "4D ", "5A ", "00 " in groups of at least 150.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
+            asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
             if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64sort or base64reversesort)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
@@ -107,6 +109,13 @@ def scrapebin():
                     encodingtype = 'base64'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype) 
+                    coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
+                elif (hexmatch3 and asciimatch) and paste_data.isnumeric():
+                    filename = save_path_ascii + paste['key']
+                    encodingtype = "ASCII"
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 elif (hexmatch or hexmatch2 or hexmatch3):
