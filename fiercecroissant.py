@@ -111,7 +111,7 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype) 
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
-                elif (hexmatch3 and asciimatch):
+                elif asciimatch:
                     filename = save_path_ascii + paste['key']
                     encodingtype = "ASCII"
                     save_paste(filename, paste_data)
