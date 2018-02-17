@@ -1,4 +1,4 @@
-import binascii, os
+import os
 
 hexdirectory = os.getcwd() + '/pastes/hexpastes/' #relative path of binary pastes.
 save_path = os.getcwd() + '/decodedexes/' #relative path of stored executables.
