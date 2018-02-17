@@ -1,4 +1,4 @@
-import base64, os
+import os
 
 asciidirectory = os.getcwd() + '/pastes/asciipastes/' #relative path of ASCII pastes.
 save_path = os.getcwd() + '/decodedexes/' #relative path of stored executables.
