@@ -17,7 +17,7 @@ save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
 save_path_ascii = save_path +'/asciipastes/'
 
-# Config
+# Config file for token or key interactions.
 config = configparser.ConfigParser()
 config.read('config.ini')
 if not config.has_section('main'):
@@ -75,7 +75,7 @@ def scrapebin():
         recent_items = None
         try:
             recent_items = r.json()
-        except (JSONDecodeError) as e:
+        except json.decoder.JSONDecodeError as e:
             print('Exception raised decoding JSON: {}').format(e)
             print(r)
             continue
@@ -96,7 +96,7 @@ def scrapebin():
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
-            if ((nonwordmatch or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
+            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64sort or base64reversesort)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
