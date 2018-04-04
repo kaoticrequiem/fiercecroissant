@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import requests, json, time, sys, os, re, configparser, base64
-from bs4 import BeautifulSoup
 from pymongo import MongoClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -9,7 +8,6 @@ client = MongoClient('localhost:27017')
 db = client.fc
 coll_pasterawunsorted = client.fc.pasterawunsorted
 coll_pastemetadata = client.fc.pastemetadata
-
 paste_data = ""
 save_path = os.getcwd() + '/pastes/'  #Where keyword matching pastes get saved
 save_path_base64 = save_path + '/base64pastes/'
@@ -26,7 +24,6 @@ if not config.has_section('main'):
     print("\nPlease ensure that your 'config.ini' exists and sets the appropriate values.\n")
     exit(1)
 hip_token = config.get('main','hip_token')
-pb_devkey = config.get('main', 'pb_devkey')
 hip_room = config.get('main', 'hip_room')
 
 
@@ -77,7 +74,14 @@ def scrapebin():
 
     while True:
         hits = 0
-        recent_items = requests_retry_session().get('https://pastebin.com/api_scraping.php', params={'limit': 50}).json()
+        r = requests_retry_session().get('https://pastebin.com/api_scraping.php', params={'limit': 50})
+        recent_items = None
+        try:
+            recent_items = r.json()
+        except (JSONDecodeError) as e:
+            print('Exception raised decoding JSON: {}').format(e)
+            print r.text()
+            continue
         for i, paste in enumerate(recent_items):
             paste_data = requests.get(paste['scrape_url']).text
             paste_lang = paste['syntax']
