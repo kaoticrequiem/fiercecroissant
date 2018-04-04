@@ -17,7 +17,7 @@ save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
 save_path_ascii = save_path + '/asciipastes/'
 
-# Config
+# Config file for token or key interactions.
 config = configparser.ConfigParser()
 config.read('config.ini')
 if not config.has_section('main'):
@@ -78,7 +78,7 @@ def scrapebin():
         recent_items = None
         try:
             recent_items = r.json()
-        except (JSONDecodeError) as e:
+        except json.decoder.JSONDecodeError as e:
             print('Exception raised decoding JSON: {}').format(e)
             print(r)
             continue
