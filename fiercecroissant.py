@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import requests, json, time, sys, os, re, configparser, base64
-from bs4 import BeautifulSoup
 from pymongo import MongoClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -9,7 +8,6 @@ client = MongoClient('localhost:27017')
 db = client.fc
 coll_pasterawunsorted = client.fc.pasterawunsorted
 coll_pastemetadata = client.fc.pastemetadata
-
 paste_data = ""
 save_path = os.getcwd() + '/pastes/'  #Where keyword matching pastes get saved
 save_path_base64 = save_path + '/base64pastes/'
@@ -17,6 +15,7 @@ save_path_hex = save_path + '/hexpastes/'
 save_path_binary = save_path + '/binarypastes/'
 save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
+save_path_ascii = save_path +'/asciipastes/'
 
 # Config
 config = configparser.ConfigParser()
@@ -93,8 +92,10 @@ def scrapebin():
             binarysort = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
+            hexmatch3 = re.search(r'([0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ]){150,}', paste_data) #Regex for hex formatted as "4D ", "5A ", "00 " in groups of at least 150.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
+            asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
             if ((nonwordmatch or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
@@ -110,7 +111,14 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype) 
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
-                elif (hexmatch or hexmatch2):
+                elif asciimatch:
+                    filename = save_path_ascii + paste['key']
+                    encodingtype = 'ASCII'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype) 
+                    coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
+                elif (hexmatch or hexmatch2 or hexmatch3):
                     filename = save_path_hex + paste['key']
                     encodingtype = 'hexadecimal'
                     save_paste(filename, paste_data)

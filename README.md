@@ -24,6 +24,8 @@ Pastes that begin with "<?php" are saved in the /phppastes/ folder. (re.search(r
 
 Pastes that begin with "data:image" are saved in the /imgpastes/ folder. (re.search(r'\A(data:image)'))
 
+Pastes that begin with "77 90 144 0 3 0 0 0" are saved in the /asciipastes/ folder (re.search(r'\A(77 90 144 0 3 0 0 0)')) as they decode into MZ Executables.
+
 Pastes that do not match any of these will be saved in the root /pastes/ folder.
 
 The base64decoder and binarydecoder scripts will go through all the saved pastes in the /base64pastes/ and /binarypastes/ folder respectfully and attempt to decode them. Any decoded pastes will be removed from that folder and put in its decoded form with the same name in the /decodedexes/ folder. 
