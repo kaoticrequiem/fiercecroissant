@@ -15,7 +15,7 @@ save_path_hex = save_path + '/hexpastes/'
 save_path_binary = save_path + '/binarypastes/'
 save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
-save_path_ascii = save_path +'/asciipastes/'
+save_path_ascii = save_path + '/asciipastes/'
 
 # Config
 config = configparser.ConfigParser()
@@ -67,7 +67,10 @@ def scrapebin():
         }
         data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
         params = {'auth_token': hip_token}
-        r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
+        try:
+            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
+        except:
+            pass
 
     while True:
         hits = 0
@@ -86,6 +89,7 @@ def scrapebin():
             paste_url = paste['full_url']
             print('\rScraping: {0} / {1}'.format(i + 1, result_limit))
             stringmatch = re.search(r'(A){20}', paste_data) #Searching for 20 'A's in a row.
+            stringmatch_76 = re.search(r'(A){76}', paste_data) #Searching for 76 'A's in a row.
             nonwordmatch = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
             base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure for an MZ executable.
             base64reversesort = re.search(r'((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)\Z', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
@@ -96,7 +100,7 @@ def scrapebin():
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
-            if ((nonwordmatch or stringmatch) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
+            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64sort or base64reversesort)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
@@ -113,9 +117,9 @@ def scrapebin():
                     hipchatpost()
                 elif asciimatch:
                     filename = save_path_ascii + paste['key']
-                    encodingtype = 'ASCII'
+                    encodingtype = "ASCII"
                     save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype) 
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 elif (hexmatch or hexmatch2 or hexmatch3):
