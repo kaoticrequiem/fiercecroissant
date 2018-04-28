@@ -74,7 +74,7 @@ def scrapebin():
 
     while True:
         hits = 0
-        r = requests_retry_session().get('https://pastebin.com/api_scraping.php', params={'limit': 50})
+        r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 50})
         recent_items = None
         try:
             recent_items = r.json()
