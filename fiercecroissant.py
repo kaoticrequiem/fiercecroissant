@@ -29,7 +29,7 @@ hip_room = config.get('main', 'hip_room')
 
 def scrapebin():
     result_limit = 50
-    sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
+    sleep_time = 5  # interval in seconds to sleep after each recent pastes batch
     
     def requests_retry_session(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
         session = session or requests.Session()
