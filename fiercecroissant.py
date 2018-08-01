@@ -79,7 +79,8 @@ def scrapebin():
         try:
             recent_items = r.json()
         except json.decoder.JSONDecodeError as e:
-            print('Exception raised decoding JSON: {}').format(e)
+            print(('Exception raised decoding JSON: {}').format(e))
+            print(r.status_code())
             print(r)
             continue
         for i, paste in enumerate(recent_items):
