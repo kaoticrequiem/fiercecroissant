@@ -98,7 +98,7 @@ def scrapebin():
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
             if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64treversematch)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
-                if (binarysort and paste_data.isnumeric()):
+                if (binarymatch and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
                     save_paste(filename, paste_data)
