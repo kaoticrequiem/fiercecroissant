@@ -6,7 +6,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 client = MongoClient('localhost:27017')
 db = client.fc
-coll_pasterawunsorted = client.fc.pasterawunsorted
+
 coll_pastemetadata = client.fc.pastemetadata
 paste_data = ""
 save_path = os.getcwd() + '/pastes/'  #Where keyword matching pastes get saved
@@ -28,8 +28,6 @@ hip_room = config.get('main', 'hip_room')
 
 
 def scrapebin():
-    result_limit = 50
-    sleep_time = 30  # interval in seconds to sleep after each recent pastes batch
     
     def requests_retry_session(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
         session = session or requests.Session()
@@ -74,7 +72,7 @@ def scrapebin():
 
     while True:
         hits = 0
-        r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 50})
+        r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 100})
         recent_items = None
         try:
             recent_items = r.json()
@@ -82,24 +80,24 @@ def scrapebin():
             print(('Exception raised decoding JSON: {}').format(e))
             continue
         for i, paste in enumerate(recent_items):
-            paste_data = requests.get(paste['scrape_url']).text
+            pb_raw_url = 'https://pastebin.com/raw/' + paste['key']
+            paste_data = requests.get(pb_raw_url).text
             paste_lang = paste['syntax']
             paste_size = paste['size']
             paste_url = paste['full_url']
-            print('\rScraping: {0} / {1}'.format(i + 1, result_limit))
             stringmatch = re.search(r'(A){20}', paste_data) #Searching for 20 'A's in a row.
             stringmatch_76 = re.search(r'(A){76}', paste_data) #Searching for 76 'A's in a row.
             nonwordmatch = re.search(r'\w{200,}', paste_data) #Searching for 200 characters in a row to get non-words.
-            base64sort = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure for an MZ executable.
-            base64reversesort = re.search(r'((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)\Z', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
-            binarysort = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
+            base64match = re.search(r'\A(TV(oA|pB|pQ|qQ|qA|ro|pA))', paste_data) #Searches the start of the paste for Base64 encoding structure for an MZ executable.
+            base64reversematch = re.search(r'((Ao|Bp|Qp|Qq|Aq|or|Ap)VT)\Z', paste_data) #Searches the end of the paste for reversed Base64 encoding structure for an MZ executable.
+            binarymatch = re.search(r'(0|1){200,}', paste_data) #Searches for 200 0's or 1's in a row.
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
             hexmatch3 = re.search(r'([0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ]){150,}', paste_data) #Regex for hex formatted as "4D ", "5A ", "00 " in groups of at least 150.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
-            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64sort or base64reversesort)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
+            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64treversematch)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarysort and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
@@ -107,7 +105,7 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
-                elif (base64sort or base64reversesort):
+                elif (base64match or base64reversematch):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'base64'
                     save_paste(filename, paste_data)
@@ -139,7 +137,7 @@ def scrapebin():
                     filename = save_path_img + paste['key']
                     encodingtype = 'img'
                     save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
+                    metadata = save_metadata(pastex, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 else:
@@ -149,10 +147,7 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
-                hits += 1
-            print("\nHits: {0}".format(hits))
-        print("Waiting...\n\n")
-        time.sleep(sleep_time)
+        time.sleep(60)
 if __name__ == "__main__":
     while True:
         scrapebin()
