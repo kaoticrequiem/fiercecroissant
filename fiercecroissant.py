@@ -137,7 +137,7 @@ def scrapebin():
                     filename = save_path_img + paste['key']
                     encodingtype = 'img'
                     save_paste(filename, paste_data)
-                    metadata = save_metadata(pastex, encodingtype)
+                    metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
                 else:
