@@ -16,6 +16,7 @@ save_path_binary = save_path + '/binarypastes/'
 save_path_php = save_path + '/phppastes/'
 save_path_img = save_path + '/imgpastes/'
 save_path_ascii = save_path + '/asciipastes/'
+save_path_ps = save_path + '/pspastes/'
 
 # Config file for token or key interactions.
 config = configparser.ConfigParser()
@@ -97,7 +98,8 @@ def scrapebin():
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
-            if (((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64treversematch)) or hexmatch3) and int(paste_size) > 40000) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
+            powershellmatch = re.search(r'powershell', paste_data)
+            if ((((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64reversematch)) or hexmatch3) and int(paste_size) > 40000) or (powershellmatch and int(paste_size) < 10000)) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarymatch and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
@@ -136,6 +138,13 @@ def scrapebin():
                 elif imgmatch:
                     filename = save_path_img + paste['key']
                     encodingtype = 'img'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
+                elif powershellmatch:
+                    filename = save_path_ps + paste['key']
+                    encodingtype = 'powershell'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
