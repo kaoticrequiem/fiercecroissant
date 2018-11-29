@@ -26,6 +26,8 @@ if not config.has_section('main'):
     exit(1)
 hip_token = config.get('main','hip_token')
 hip_room = config.get('main', 'hip_room')
+webex_roomid = config.get('main', 'webex_roomid')
+webex_token = config.get('main', 'webex_token')
 
 
 def scrapebin():
@@ -71,6 +73,11 @@ def scrapebin():
         except:
             pass
 
+    
+    def base64reverser(s):
+        return s[::-1]
+
+
     while True:
         hits = 0
         r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 100})
@@ -98,7 +105,7 @@ def scrapebin():
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
-            powershellmatch = re.search(r'powershell', paste_data)
+            powershellmatch = re.search(r'powershell', paste_data) #Searches the paste for 'powershell'.
             if ((((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64reversematch)) or hexmatch3) and int(paste_size) > 40000) or (powershellmatch and int(paste_size) < 10000)) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if (binarymatch and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
@@ -107,7 +114,14 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     hipchatpost()
-                elif (base64match or base64reversematch):
+                elif (base64reversematch):
+                    filename = save_path_base64 + paste['key']
+                    encodingtype = 'reverse_base64'
+                    save_paste(filename, base64reverser(paste_data))
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    hipchatpost()
+                elif (base64match):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'base64'
                     save_paste(filename, paste_data)
