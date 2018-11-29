@@ -26,8 +26,6 @@ if not config.has_section('main'):
     exit(1)
 hip_token = config.get('main','hip_token')
 hip_room = config.get('main', 'hip_room')
-webex_roomid = config.get('main', 'webex_roomid')
-webex_token = config.get('main', 'webex_token')
 
 
 def scrapebin():
