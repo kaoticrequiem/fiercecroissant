@@ -86,8 +86,8 @@ def scrapebin():
             print(('Exception raised decoding JSON: {}').format(e))
             continue
         for i, paste in enumerate(recent_items):
-            pb_raw_url = 'https://pastebin.com/raw/' + paste['key']
-            paste_data = requests.get(pb_raw_url).text
+            pb_scrape_url = 'https://scrape.pastebin.com/api_scrape_item.php?i=' + paste['key']
+            paste_data = requests.get(pb_scrape_url).text
             paste_lang = paste['syntax']
             paste_size = paste['size']
             paste_url = paste['full_url']
