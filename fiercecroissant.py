@@ -24,8 +24,6 @@ config.read('config.ini')
 if not config.has_section('main'):
     print("\nPlease ensure that your 'config.ini' exists and sets the appropriate values.\n")
     exit(1)
-hip_token = config.get('main','hip_token')
-hip_room = config.get('main', 'hip_room')
 webex_token = config.get('main', 'webex_token')
 webex_room = config.get('main', 'webex_room')
 
