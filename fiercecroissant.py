@@ -26,6 +26,8 @@ if not config.has_section('main'):
     exit(1)
 hip_token = config.get('main','hip_token')
 hip_room = config.get('main', 'hip_room')
+webex_token = config.get('main', 'webex_token')
+webex_room = config.get('main', 'webex_room')
 
 
 def scrapebin():
@@ -47,37 +49,30 @@ def scrapebin():
         pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
         return pastemetadata_dict
 
-    def hipchatpost():
-        #Alerts a HipChat room about a new paste.
-        headers = {'Content-Type': 'application/json'}
-        card = {
-            "style": "link",
-            "url": paste_url,
-            "id": "fee4d9a3-685d-4cbd-abaa-c8850d9b1960",
-            "title": "Pastebin Hit",
-            "description": {
-                "format": "html",
-                "value": "<b>New Paste Seen:</b>" + paste_url + " Encoded as:" + encodingtype
-                    },
-        "icon": {
-            "url": "https://pastebin.com/favicon.ico"
-                    },
-        "date": 1443057955792
-        }
-        data_json = {'message': '<b>New Paste<b>', 'card': card, 'message_format': 'html'}
-        params = {'auth_token': hip_token}
-        try:
-            r = requests.post('https://api.hipchat.com/v2/room/' + hip_room + '/notification', data=json.dumps(data_json),headers=headers, params=params)
-        except:
-            pass
+    def generate_message(paste_url, encodingtype):
+        return("New paste seen:" + paste_url + " Encoded as:" + encodingtype)
 
+
+    def webexpost():
+        headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer {}'.format(webex_token)
+        }
+        message_content = {
+        'roomId': webex_room,
+        'markdown': generate_message(paste_url, encodingtype)
+        }
+        try:
+            r = requests.post('https://api.ciscospark.com/v1/messages', data=json.dumps(message_content),headers=headers)
+        except requests.exceptions.RequestException as e:
+            print(('Exception raised trying to post to webex: {}').format(e))
+            pass
     
     def base64reverser(s):
         return s[::-1]
 
 
     while True:
-        hits = 0
         r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 100})
         recent_items = None
         try:
@@ -105,69 +100,69 @@ def scrapebin():
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
             powershellmatch = re.search(r'powershell', paste_data) #Searches the paste for 'powershell'.
             if ((((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64reversematch)) or hexmatch3) and int(paste_size) > 40000) or (powershellmatch and int(paste_size) < 10000)) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
-                if (binarymatch and paste_data.isnumeric()):
-                    filename = save_path_binary + paste['key']
-                    encodingtype = 'binary'
+                if imgmatch:
+                    filename = save_path_img + paste['key']
+                    encodingtype = 'img'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
-                elif (base64reversematch):
-                    filename = save_path_base64 + paste['key']
-                    encodingtype = 'reverse_base64'
-                    save_paste(filename, base64reverser(paste_data))
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
-                elif (base64match):
-                    filename = save_path_base64 + paste['key']
-                    encodingtype = 'base64'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype) 
-                    coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
-                elif asciimatch:
-                    filename = save_path_ascii + paste['key']
-                    encodingtype = "ASCII"
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
-                elif (hexmatch or hexmatch2 or hexmatch3):
-                    filename = save_path_hex + paste['key']
-                    encodingtype = 'hexadecimal'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
+                    webexpost()
                 elif phpmatch:
                     filename = save_path_php + paste['key']
                     encodingtype = 'php'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
-                elif imgmatch:
-                    filename = save_path_img + paste['key']
-                    encodingtype = 'img'
+                    webexpost()                                    
+                elif (binarymatch and paste_data.isnumeric()) or binarymatch2:
+                    filename = save_path_binary + paste['key']
+                    encodingtype = 'binary'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
+                    webexpost()
+                elif (base64reversematch):
+                    filename = save_path_base64 + paste['key']
+                    encodingtype = 'reverse_base64'
+                    save_paste(filename, base64reverser(paste_data))
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
+                elif (base64match):
+                    filename = save_path_base64 + paste['key']
+                    encodingtype = 'base64'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype) 
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
+                elif asciimatch:
+                    filename = save_path_ascii + paste['key']
+                    encodingtype = "ASCII"
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
+                elif (hexmatch or hexmatch2 or hexmatch3):
+                    filename = save_path_hex + paste['key']
+                    encodingtype = 'hexadecimal'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 elif powershellmatch:
                     filename = save_path_ps + paste['key']
                     encodingtype = 'powershell'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
+                    webexpost()
                 else:
                     filename = save_path + paste['key']
                     encodingtype = 'other'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
-                    hipchatpost()
+                    webexpost()
         time.sleep(60)
 if __name__ == "__main__":
     while True:
