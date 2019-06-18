@@ -69,6 +69,11 @@ def scrapebin():
     def base64reverser(s):
         return s[::-1]
 
+    def fc_process(filename, encodingtype):
+        save_paste(filename, paste_data)
+        metadata = save_metadata(paste, encodingtype)
+        coll_pastemetadata.insert_one(metadata)
+        webexpost()
 
     while True:
         r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 100})
@@ -100,26 +105,11 @@ def scrapebin():
             powershellmatch = re.search(r'powershell', paste_data) #Searches the paste for 'powershell'.
             if ((((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64reversematch)) or hexmatch3) and int(paste_size) > 40000) or (powershellmatch and int(paste_size) < 10000)) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if imgmatch:
-                    filename = save_path_img + paste['key']
-                    encodingtype = 'img'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
+                    fc_process(save_path_img + paste['key'],'img')
                 elif phpmatch:
-                    filename = save_path_php + paste['key']
-                    encodingtype = 'php'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()                                    
+                    fc_process(save_path_php + paste['key'],'php')                                   
                 elif (binarymatch and paste_data.isnumeric()) or binarymatch2:
-                    filename = save_path_binary + paste['key']
-                    encodingtype = 'binary'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
+                    fc_process(save_path_binary + paste['key'],'binary')
                 elif (base64reversematch):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'reverse_base64'
@@ -128,40 +118,15 @@ def scrapebin():
                     coll_pastemetadata.insert_one(metadata)
                     webexpost()
                 elif (base64match):
-                    filename = save_path_base64 + paste['key']
-                    encodingtype = 'base64'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype) 
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
+                    fc_process(save_path_base64 + paste['key'],'base64')
                 elif asciimatch:
-                    filename = save_path_ascii + paste['key']
-                    encodingtype = "ASCII"
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
+                    fc_process(save_path_ascii + paste['key'],'ASCII')
                 elif (hexmatch or hexmatch2 or hexmatch3):
-                    filename = save_path_hex + paste['key']
-                    encodingtype = 'hexadecimal'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
-                elif powershellmatch:
-                    filename = save_path_ps + paste['key']
-                    encodingtype = 'powershell'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
+                    fc_process(save_path_hex + paste['key'],'hexadecimal')
+                elif powershellmatch and (int(paste_size) < 10000):
+                    fc_process(save_path_ps + paste['key'],'powershell')
                 else:
-                    filename = save_path + paste['key']
-                    encodingtype = 'other'
-                    save_paste(filename, paste_data)
-                    metadata = save_metadata(paste, encodingtype)
-                    coll_pastemetadata.insert_one(metadata)
-                    webexpost()
+                    fc_process(save_path + paste['key'],'other')
         time.sleep(60)
 if __name__ == "__main__":
     while True:
