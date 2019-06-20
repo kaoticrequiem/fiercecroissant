@@ -27,51 +27,54 @@ if not config.has_section('main'):
 webex_token = config.get('main', 'webex_token')
 webex_room = config.get('main', 'webex_room')
 
-def requests_retry_session(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
-    session = session or requests.Session()
-    retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
-    adapter = HTTPAdapter(max_retries=retry)      
-    session.mount('https://', adapter)
-    return session
 
-def save_paste(path, data):
-    with open(path, 'w', encoding='utf-8') as file:
-        file.write(data)
-    return file.closed
+def scrapebin():
+    
+    def requests_retry_session(retries=10, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None, params=None):
+        session = session or requests.Session()
+        retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
+        adapter = HTTPAdapter(max_retries=retry)      
+        session.mount('https://', adapter)
+        return session
+    
+    def save_paste(path, data):
+        with open(path, 'w', encoding='utf-8') as file:
+            file.write(data)
+        return file.closed
 
-def save_metadata(paste, encodingtype):
-    pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
-    pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
-    return pastemetadata_dict
-   
-def generate_message(paste_url, encodingtype):
-    return("New paste seen:" + paste_url + " Encoded as:" + encodingtype)
+    def save_metadata(paste, encodingtype):
+        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
+        pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
+        return pastemetadata_dict
 
-def webexpost():
-    headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer {}'.format(webex_token)
-    }
-    message_content = {
-    'roomId': webex_room,
-    'markdown': generate_message(paste_url, encodingtype)
-    }
-    try:
-        r = requests.post('https://api.ciscospark.com/v1/messages', data=json.dumps(message_content),headers=headers)
-    except requests.exceptions.RequestException as e:
-        print(('Exception raised trying to post to webex: {}').format(e))
-        pass
+    def generate_message(paste_url, encodingtype):
+        return("New paste seen:" + paste_url + " Encoded as:" + encodingtype)
 
-def fc_process(filename, encodingtype):
-    save_paste(filename, paste_data)
-    metadata = save_metadata(paste, encodingtype)
-    coll_pastemetadata.insert_one(metadata)
-    webexpost()
 
-def base64reverser(s):
-    return s[::-1]
+    def webexpost():
+        headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer {}'.format(webex_token)
+        }
+        message_content = {
+        'roomId': webex_room,
+        'markdown': generate_message(paste_url, encodingtype)
+        }
+        try:
+            r = requests.post('https://api.ciscospark.com/v1/messages', data=json.dumps(message_content),headers=headers)
+        except requests.exceptions.RequestException as e:
+            print(('Exception raised trying to post to webex: {}').format(e))
+            pass
+    
+    def base64reverser(s):
+        return s[::-1]
 
-def scrapebin(): 
+    def fc_process(filename, encodingtype):
+        save_paste(filename, paste_data)
+        metadata = save_metadata(paste, encodingtype)
+        coll_pastemetadata.insert_one(metadata)
+        webexpost()
+
     while True:
         r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 100})
         recent_items = None
@@ -125,7 +128,6 @@ def scrapebin():
                 else:
                     fc_process(save_path + paste['key'],'other')
         time.sleep(60)
-
 if __name__ == "__main__":
     while True:
         scrapebin()
