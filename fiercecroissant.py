@@ -4,10 +4,15 @@ from pymongo import MongoClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-client = MongoClient('localhost:27017')
-db = client.fc
+with open('/home/ubuntu/patrick/MongoCreds') as app_credentials:
+    app_creds = app_credentials.read()
+    app_creds = app_creds.split(',')
+    app_username, app_password = app_creds[0].strip(),app_creds[1].strip()
 
+client = MongoClient('mongodb://' + app_username + ':' + app_password + '@localhost:27017/')
+db = client.fc
 coll_pastemetadata = client.fc.pastemetadata
+
 paste_data = ""
 save_path = os.getcwd() + '/pastes/'  #Where keyword matching pastes get saved
 save_path_base64 = save_path + '/base64pastes/'
@@ -43,13 +48,12 @@ def scrapebin():
         return file.closed
 
     def save_metadata(paste, encodingtype):
-        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[]}
-        pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype})
+        pastemetadata_dict = {'date': [], 'key': [], 'size': [], 'expire': [], 'syntax': [], 'user':[], 'encodingtype':[], 'source':[]}
+        pastemetadata_dict.update({'date':paste['date'], 'key':paste['key'], 'size':paste['size'], 'expire':paste['expire'], 'syntax':paste['syntax'], 'user':paste['user'], 'encodingtype':encodingtype, 'source':'pastebin'})
         return pastemetadata_dict
 
     def generate_message(paste_url, encodingtype):
         return("New paste seen:" + paste_url + " Encoded as:" + encodingtype)
-
 
     def webexpost():
         headers = {
@@ -66,14 +70,8 @@ def scrapebin():
             print(('Exception raised trying to post to webex: {}').format(e))
             pass
     
-    def base64reverser(s):
+    def reverser(s):
         return s[::-1]
-
-    def fc_process(filename, encodingtype):
-        save_paste(filename, paste_data)
-        metadata = save_metadata(paste, encodingtype)
-        coll_pastemetadata.insert_one(metadata)
-        webexpost()
 
     while True:
         r = requests_retry_session().get('https://scrape.pastebin.com/api_scraping.php', params={'limit': 100})
@@ -99,34 +97,82 @@ def scrapebin():
             hexmatch = re.search(r'(\\x\w\w){100,}', paste_data) #Regex for hex formatted as "\\xDC", "\\x02", "\\xC4"
             hexmatch2 = re.search(r'[2-9A-F]{200,}', paste_data) #Regex for Hexadecimal encoding.
             hexmatch3 = re.search(r'([0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ][0-9A-F ]){150,}', paste_data) #Regex for hex formatted as "4D ", "5A ", "00 " in groups of at least 150.
+            hexreversematch = re.search(r'\A(00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00)', paste_data) #Regex for reversed hex.
             phpmatch = re.search(r'\A(<\?php)', paste_data) #Searches the start of a paste for php structure.
             imgmatch = re.search(r'\A(data:image)', paste_data) #Searches the start of a paste for data:image structure.
             asciimatch = re.search(r'\A(77 90 144 0 3 0 0 0)', paste_data) #Searches the start of a paste for '77 90 144 0 3 0 0 0' to filter ASCII.
             powershellmatch = re.search(r'powershell', paste_data) #Searches the paste for 'powershell'.
             if ((((nonwordmatch or stringmatch) or (stringmatch_76 and (base64match or base64reversematch)) or hexmatch3) and int(paste_size) > 40000) or (powershellmatch and int(paste_size) < 10000)) and paste_lang == "text" and coll_pastemetadata.find_one({'key':paste['key']}) is None:
                 if imgmatch:
-                    fc_process(save_path_img + paste['key'],'img')
+                    filename = save_path_img + paste['key']
+                    encodingtype = 'img'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 elif phpmatch:
-                    fc_process(save_path_php + paste['key'],'php')                                   
+                    filename = save_path_php + paste['key']
+                    encodingtype = 'php'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()                                   
                 elif (binarymatch and paste_data.isnumeric()) or binarymatch2:
-                    fc_process(save_path_binary + paste['key'],'binary')
+                    filename = save_path_binary + paste['key']
+                    encodingtype = 'binary'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 elif (base64reversematch):
                     filename = save_path_base64 + paste['key']
                     encodingtype = 'reverse_base64'
-                    save_paste(filename, base64reverser(paste_data))
+                    save_paste(filename, reverser(paste_data))
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     webexpost()
                 elif (base64match):
-                    fc_process(save_path_base64 + paste['key'],'base64')
+                    filename = save_path_base64 + paste['key']
+                    encodingtype = 'base64'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 elif asciimatch:
-                    fc_process(save_path_ascii + paste['key'],'ASCII')
+                    filename = save_path_ascii + paste['key']
+                    encodingtype = 'ASCII'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
+                elif (hexmatch or hexmatch2 or hexmatch3) and hexreversematch:
+                    filename = save_path_hex + paste['key']
+                    encodingtype = 'hexadecimal'
+                    save_paste(filename, reverser(paste_data))
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 elif (hexmatch or hexmatch2 or hexmatch3):
-                    fc_process(save_path_hex + paste['key'],'hexadecimal')
+                    filename = save_path_hex + paste['key']
+                    encodingtype = 'reverse_hexadecimal'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 elif powershellmatch and (int(paste_size) < 10000):
-                    fc_process(save_path_ps + paste['key'],'powershell')
+                    filename = save_path_ps + paste['key']
+                    encodingtype = 'powershell'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
                 else:
-                    fc_process(save_path + paste['key'],'other')
+                    filename = save_path + paste['key']
+                    encodingtype = 'other'
+                    save_paste(filename, paste_data)
+                    metadata = save_metadata(paste, encodingtype)
+                    coll_pastemetadata.insert_one(metadata)
+                    webexpost()
         time.sleep(60)
 if __name__ == "__main__":
     while True:
