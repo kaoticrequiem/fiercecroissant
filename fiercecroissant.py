@@ -4,12 +4,7 @@ from pymongo import MongoClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-with open('/home/ubuntu/patrick/MongoCreds') as app_credentials:
-    app_creds = app_credentials.read()
-    app_creds = app_creds.split(',')
-    app_username, app_password = app_creds[0].strip(),app_creds[1].strip()
-
-client = MongoClient('mongodb://' + app_username + ':' + app_password + '@localhost:27017/')
+client = MongoClient('localhost:27017')
 db = client.fc
 coll_pastemetadata = client.fc.pastemetadata
 
