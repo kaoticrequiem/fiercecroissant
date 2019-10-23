@@ -4,7 +4,12 @@ from pymongo import MongoClient
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-client = MongoClient('localhost:27017')
+with open('/home/ubuntu/patrick/MongoCreds') as app_credentials:
+    app_creds = app_credentials.read()
+    app_creds = app_creds.split(',')
+    app_username, app_password = app_creds[0].strip(),app_creds[1].strip()
+
+client = MongoClient('mongodb://' + app_username + ':' + app_password + '@localhost:27017/')
 db = client.fc
 coll_pastemetadata = client.fc.pastemetadata
 
@@ -142,14 +147,14 @@ def scrapebin():
                     webexpost()
                 elif (hexmatch or hexmatch2 or hexmatch3) and hexreversematch:
                     filename = save_path_hex + paste['key']
-                    encodingtype = 'hexadecimal'
+                    encodingtype = 'reverse_hexadecimal'
                     save_paste(filename, reverser(paste_data))
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     webexpost()
                 elif (hexmatch or hexmatch2 or hexmatch3):
                     filename = save_path_hex + paste['key']
-                    encodingtype = 'reverse_hexadecimal'
+                    encodingtype = 'hexadecimal'
                     save_paste(filename, paste_data)
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
