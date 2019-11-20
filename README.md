@@ -8,7 +8,7 @@ To scrape Pastebin, you must register your IP address in an account through Past
 
 ## Requirements
 
-FierceCroissant uses Python 3. In addition, paste metadata is saved in a Mongo DB database (fc.pastemetadata by default). Last, the default messaging service to inform users is Hipchat.
+FierceCroissant uses Python 3. In addition, paste metadata is saved in a Mongo DB database (fc.pastemetadata by default). Last, the default messaging service to inform users is Webex.
 
 ## Methodology
 
@@ -26,8 +26,10 @@ Pastes that begin with "data:image" are saved in the /imgpastes/ folder. (re.sea
 
 Pastes that begin with "77 90 144 0 3 0 0 0" are saved in the /asciipastes/ folder (re.search(r'\A(77 90 144 0 3 0 0 0)')) as they decode into MZ Executables.
 
+Pastes that contain "Powershell" will be saved into the /pspastes/ folder. Only pastes under 10k will be saved, in order to focus on powershell scripts rather than tutorials.
+
 Pastes that do not match any of these will be saved in the root /pastes/ folder.
 
 The decoder scripts (base64, binary, ASCII, and hex) will go through all the saved pastes in the respective folders and attempt to decode them. Any decoded pastes will be removed from that folder and put in its decoded form with the same name in the /decodedexes/ folder. 
 
-Once decoded, it is expected that these pastes will be run by a sandbox environment such as Threatgrid or Joe's Sandbox to analyse their content and retrieve domain and URL information from the malicious samples. Alternatively, the hashsums of decoded executables could also be calculated to determine maliciousness.
+Once decoded, it is expected that these pastes will be run by a sandbox environment such as Threatgrid or Joe's Sandbox to analyse their content and retrieve domain and URL information from the malicious samples. Alternatively, the hashsums of decoded executables could also be calculated to determine maliciousness.	

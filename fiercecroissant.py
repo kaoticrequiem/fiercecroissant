@@ -112,7 +112,7 @@ def scrapebin():
                     metadata = save_metadata(paste, encodingtype)
                     coll_pastemetadata.insert_one(metadata)
                     webexpost()                                   
-                elif (binarymatch and paste_data.isnumeric()) or binarymatch2:
+                elif ((binarymatch or binarymatch2) and paste_data.isnumeric()):
                     filename = save_path_binary + paste['key']
                     encodingtype = 'binary'
                     save_paste(filename, paste_data)
@@ -169,6 +169,7 @@ def scrapebin():
                     coll_pastemetadata.insert_one(metadata)
                     webexpost()
         time.sleep(60)
+
 if __name__ == "__main__":
     while True:
         scrapebin()
